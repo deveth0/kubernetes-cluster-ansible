@@ -1,0 +1,19 @@
+# Install the self-hosted-recovery to fix the issue described here: https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#caveats
+- hosts: kube-master:kube-node
+  become: yes
+  tasks:
+   - name: Clone self-hosted-recovery
+     git:
+       repo: https://github.com/xetys/k8s-self-hosted-recovery.git
+       dest: /opt/k8s-self-hosted-recovery
+
+   - name: Install self-hosted-recovery
+     shell: './install.sh'
+     args: 
+       chdir: /opt/k8s-self-hosted-recovery
+       creates: /usr/local/bin/k8s-self-hosted-recover
+
+   - name: Start self-hosted-recovery Service
+     systemd:
+       state: started
+       name: k8s-self-hosted-recover

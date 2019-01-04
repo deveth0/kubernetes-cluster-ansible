@@ -1,0 +1,56 @@
+# Setup Cluster
+- hosts: kube-master
+  become: yes
+  tasks:
+   - name: Install kubectl on Master
+     apt:
+       name: kubectl
+       state: present
+
+   # Initialize Cluster. The log is also used to prevent an second initialization
+   - name: Initialize Cluster
+     shell: kubeadm init --pod-network-cidr=10.244.0.0/16 >> cluster_init.log
+     args:
+       chdir: $HOME
+       creates: cluster_init.log
+
+   # Create the configuration / configuration directory
+   - name: Create .kube directory
+     file:
+       path: $HOME/.kube
+       state: directory
+       mode: 0755
+
+   - name: Copy admin.conf to the user's kube directory
+     copy:
+       src: /etc/kubernetes/admin.conf
+       dest: $HOME/.kube/config
+       remote_src: yes
+
+   - name: Setup Flannel. Use log to prevent second installation
+     shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.10.0/Documentation/kube-flannel.yml >> flannel_setup.log
+     args:
+       chdir: $HOME
+       creates: flannel_setup.log
+
+   - name: Create token to join cluster
+     shell: kubeadm token create --print-join-command
+     register: join_command_raw
+
+   - name: Set join command as fact
+     set_fact:
+       join_command: "{{ join_command_raw.stdout_lines[0] }}"
+
+# Join Cluster with each kube-node
+- hosts: kube-node
+  become: yes
+  tasks:
+
+    - name: Wait for master's port 6443
+      wait_for: "host={{ hostvars['kubernetes']['ansible_default_ipv4']['address'] }} port=6443 timeout=1"
+
+    - name: Join the cluster. Use log to prevent joining twice
+      shell: "{{ hostvars['kubernetes'].join_command }} >> node_join.log"
+      args:
+        chdir: $HOME
+        creates: node
