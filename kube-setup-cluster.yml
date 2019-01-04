@@ -28,7 +28,7 @@
        remote_src: yes
 
    - name: Setup Flannel. Use log to prevent second installation
-     shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.10.0/Documentation/kube-flannel.yml >> flannel_setup.log
+     shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml >> flannel_setup.log
      args:
        chdir: $HOME
        creates: flannel_setup.log
