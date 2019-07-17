@@ -2,7 +2,7 @@
 
 This repository contains different ansible-playbooks that can be used to setup a Kubernetes Cluster with Ubuntu 18.04 nodes.
 
-A detailed description is available in my blog: https://www.dev-eth0.de/blog/2018/04/01/kubernetes-cluster-ansible.html
+A detailed description is available in my blog: https://www.dev-eth0.de/2019/01/04/kubernetes-cluster-ansible/
 
 ## tl;dr
 Configure your inventory and run the following commands:
